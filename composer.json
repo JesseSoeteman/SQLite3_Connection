@@ -1,0 +1,20 @@
+{
+    "name": "jessesoeteman/sqlite3_connection",
+    "description": "This class is used to connect to a SQLite3 database. It contains methods to execute queries and statements.",
+    "type": "library",
+    "require": {
+      "php": ">=5.3.0"
+    },
+    "license": ["MIT"],
+    "authors": [
+      {
+        "name": "Jesse Soeteman",
+        "email": "jessesoeteman@gmail.com"
+      }
+    ],
+    "autoload": {
+      "psr-0": {
+        "SQLite3Connection": "src/"
+      }
+    }
+  }
