@@ -14,7 +14,7 @@
     ],
     "autoload": {
       "psr-4": {
-        "SQLite3_Connection": "src/"
+        "SQLite3_Connection\\": "src/"
       }
     }
   }
