@@ -1,6 +1,10 @@
 <?php
 
-require_once "Classes/ParamBindObject.php";
+namespace SQLite3_Connection;
+use SQLite3;
+use Exception;
+
+use SQLite3_Connection\Classes\ParamBindObject;
 
 /**
  * SQLite3_Connection

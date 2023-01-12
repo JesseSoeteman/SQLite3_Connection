@@ -1,5 +1,9 @@
 <?php
 
+namespace SQLite3_Connection\Classes;
+
+use SQLite3;
+
 /**
  * ParamBindObject
  * 
