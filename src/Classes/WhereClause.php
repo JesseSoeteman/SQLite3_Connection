@@ -31,8 +31,8 @@ class WhereClause
             case OPERATOR::LESS_THAN_OR_EQUAL_TO:
             case OPERATOR::LIKE:
             case OPERATOR::NOT_LIKE:
-                $this->value = " " . "`" . "::__" . $this->column . "`";
-                $this->boundParams = [new ParamBindObject("::__" . $this->column, $this->value)];
+                $this->value = " " . "`" . "::" . $this->column . "`";
+                $this->boundParams = [new ParamBindObject("::" . $this->column, $this->value)];
                 break;
             case OPERATOR::IN:
             case OPERATOR::NOT_IN:
@@ -40,8 +40,8 @@ class WhereClause
                     throw new \Exception("The value for the '" . $this->operator . "' operator must be an array.");
                 }
                 $this->value = " (" . implode(", ", array_map(function ($value, $index) {
-                    $this->boundParams[] = new ParamBindObject("::" . str_repeat(":", $index) . "__" . $this->column, $value);
-                    return "`" . "::" . str_repeat(":", $index) . "__" . $this->column . "`";
+                    $this->boundParams[] = new ParamBindObject("::" . str_repeat(":", $index) . $this->column, $value);
+                    return "`" . "::" . str_repeat(":", $index) . $this->column . "`";
                 }, $this->value)) . ")";
                 break;
             case OPERATOR::BETWEEN:
@@ -53,8 +53,8 @@ class WhereClause
                     throw new \Exception("The value for the '" . $this->operator . "' operator must be an array with 2 values.");
                 }
                 $this->value = " " . implode(" AND ", array_map(function ($value, $index) {
-                    $this->boundParams[] = new ParamBindObject("::" . str_repeat(":", $index) . "__" . $this->column, $value);
-                    return "`" . "::" . str_repeat(":", $index) . "__" . $this->column . "`";
+                    $this->boundParams[] = new ParamBindObject("::" . str_repeat(":", $index) . $this->column, $value);
+                    return "`" . "::" . str_repeat(":", $index) . $this->column . "`";
                 }, $this->value));
                 break;
             default:

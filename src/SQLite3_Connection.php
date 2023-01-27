@@ -113,9 +113,6 @@ class SQLite3_Connection
             return str_repeat(":", $param->idCount) . $param->param;
         }, $params)) . ")";
 
-        // q: array to string conversion
-        // a: array_map but return a string instead of an array
-
 
         $result = $this->executeStatement($sql, $params);
 
