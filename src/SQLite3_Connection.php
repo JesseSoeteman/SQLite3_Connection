@@ -76,10 +76,10 @@ class SQLite3_Connection
             $params = $where->getBoundParams();
         }
         
-        return $this->checkError([false, [
+        return $this->checkError([false, json_encode([
             "sql" => $sql,
             "params" => $params
-        ]]);
+        ])]);
         $result = $this->executeStatement($sql, $params);
 
 
