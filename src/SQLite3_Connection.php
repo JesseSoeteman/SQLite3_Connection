@@ -220,6 +220,11 @@ class SQLite3_Connection
         }
 
         foreach ($params as &$param) {
+
+            if (!$param instanceof ParamBindObject) {
+                $this->checkError([false, "ParamBindObject expected."]);
+            }
+
             $idCountString = str_repeat(":", $param->idCount);
             $stmt->bindValue($idCountString . $param->param, $param->value, $param->type);
             if (!$stmt) {

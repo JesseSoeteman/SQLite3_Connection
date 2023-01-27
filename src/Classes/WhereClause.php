@@ -31,7 +31,6 @@ class WhereClause
             case OPERATOR::LESS_THAN_OR_EQUAL_TO:
             case OPERATOR::LIKE:
             case OPERATOR::NOT_LIKE:
-                // $this->value = " " . "`" . "\:\:" . $this->column . "`";
                 $this->boundParams = [new ParamBindObject("::" . $this->column, $this->value, 2)];
                 break;
             case OPERATOR::IN:
