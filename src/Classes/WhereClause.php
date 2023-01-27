@@ -12,7 +12,7 @@ class WhereClause
     private OPERATOR $operator;
     private array $boundParams = [];
 
-    public function __construct(string $column, OPERATOR $operator = OPERATOR::EQUALS, mixed $value = null)
+    public function __construct(string $column, string $operator = OPERATOR::EQUALS, mixed $value = null)
     {
         $this->column = $column;
         $this->value = $value;
