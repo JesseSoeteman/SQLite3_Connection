@@ -242,48 +242,6 @@ class SQLite3_Connection
     }
 
     /**
-     * Get Statement String
-     * 
-     * Returns a string for a statement.
-     * 
-     * if $updateString is true the result will be like this: "column1 = :column1, column2 = :column2"
-     * if $updateString is false the result will be like this: "(:column1, :column2)" and like this if $withColon is false: "(column1, column2)"
-     * 
-     * @param array $params The parameters to bind to the query. (ParamBindObject)
-     * @param bool $withColon If the string should contain a colon.
-     * @param bool $updateString If the string should be used for an update statement.
-     * 
-     * @return string The string for the statement.
-     */
-    private function getStatementString(array $params = [], bool $withColon = false, bool $updateString = false): string
-    {
-        if (!$updateString) {
-            $string = "(";
-            for ($i = 0; $i < count($params); $i++) {
-                if ($withColon) {
-                    $string .= $params[$i]->param;
-                } else {
-                    $string .= str_repeat(":", $params[$i]->idCount) . $params[$i]->param;
-                }
-                if ($i < count($params) - 1) {
-                    $string .= ", ";
-                }
-            }
-            $string .= ")";
-            return $string;
-        }
-
-        $string = "";
-        for ($i = 0; $i < count($params); $i++) {
-            $string .= $params[$i]->param . " = " . str_repeat(":", $params[$i]->idCount) . $params[$i]->param;
-            if ($i < count($params) - 1) {
-                $string .= ", ";
-            }
-        }
-        return $string;
-    }
-
-    /**
      * Check Table And Columns
      * 
      * Checks if a table and columns exist. Throws an exception if the table or columns do not exist.
