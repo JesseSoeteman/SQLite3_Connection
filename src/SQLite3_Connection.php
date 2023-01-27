@@ -148,9 +148,7 @@ class SQLite3_Connection
             return $where->column;
         }, $wheres)));
 
-        $select = $this->select($table, array_map(function ($param) {
-            return $param->param;
-        }, $params), $wheres);
+        $select = $this->select($table, ["*"], $wheres);
 
         if (count($select) === 0) {
             $this->checkError([false, "No rows found."]);
@@ -195,6 +193,12 @@ class SQLite3_Connection
             }
             return $where->column;
         }, $wheres));
+
+        $select = $this->select($table, ["*"], $wheres);
+
+        if (count($select) === 0) {
+            $this->checkError([false, "No rows found."]);
+        }
         
         $params = [];
         $sql = "DELETE FROM {$table} WHERE " . implode(" AND ", array_map(function ($where) {
