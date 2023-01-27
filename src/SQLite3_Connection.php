@@ -64,11 +64,11 @@ class SQLite3_Connection
      * 
      * @throws Exception
      */
-    public function select(string $table, array $columns, WhereClause $where = null)
+    public function select(string $table, array $columns, WhereClause $where = null): array
     {
         $this->checkTableAndColumns($table, $columns);
 
-        $sql = "SELECT " . $this->getStatementString($columns) . " FROM {$table}";
+        $sql = "SELECT " . implode(" ,", $columns) . " FROM {$table}";
 
         $params = [];
         if ($where != null) {
