@@ -92,27 +92,33 @@ class SQLite3_Connection
     }
 
     /**
-     * Insert
-     * 
-     * Executes an insert query on the database.
+     * Insert Query, inserts a row into the database.
      * 
      * @param string $table The table to insert into.
      * @param array $params The parameters to bind to the query. (ParamBindObject)
+     * 
      */
-    public function insert($table = "", $params = [])
+    public function insert($table, array $params)
     {
-        $tableExists = $this->executeStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=:table_name;", [new ParamBindObject(":table_name", $table)]);
+        $this->checkTableAndColumns($table, array_map(function ($param) {
+            if (!$param instanceof ParamBindObject) {
+                $this->checkError([false, "ParamBindObject expected."]);
+            }
+            return $param->param;
+        }, $params));
 
-        if ($tableExists == false || $tableExists->fetchArray() == false) {
-            $this->checkError([false, "Table does not exist."]);
-        }
-
-        $sql_statementColumns = $this->getStatementString($params, true);
-        $sql_statementValues = $this->getStatementString($params);
-
-        $sql = "INSERT INTO {$table} {$sql_statementColumns} VALUES {$sql_statementValues};";
+        $sql = "INSERT INTO {$table} (" . implode(" ,", array_map(function ($param) {
+            return $param->param;
+        }, $params)) . ") VALUES (" . array_map(function ($param) {
+            return str_repeat(":", $param->idCount) . $param->param;
+        }, $params) . ")";
 
         $result = $this->executeStatement($sql, $params);
+
+        if ($result === false) {
+            $this->checkError([false, "Error while executing statement."]);
+        }
+
         return $this->checkError([true, $result]);
     }
 
