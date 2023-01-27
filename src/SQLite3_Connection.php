@@ -250,7 +250,7 @@ class SQLite3_Connection
             $this->checkError([false, "Table does not exist. Table: {$table}"]);
         }
 
-        if ($columns[0] == "*") {
+        if (count($columns) == 0 || $columns[0] == "*") {
             return;
         }
 
