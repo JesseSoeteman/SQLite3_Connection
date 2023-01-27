@@ -9,7 +9,7 @@ class WhereClause
 {
     private string $column;
     private mixed $value;
-    private OPERATOR $operator;
+    private string $operator;
     private array $boundParams = [];
 
     public function __construct(string $column, string $operator = OPERATOR::EQUALS, mixed $value = null)
