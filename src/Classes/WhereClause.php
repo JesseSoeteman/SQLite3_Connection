@@ -7,7 +7,7 @@ use SQLite3_Connection\Statics\OPERATOR;
 
 class WhereClause
 {
-    private string $column;
+    public string $column;
     private mixed $value;
     private string $operator;
     private array $boundParams = [];
