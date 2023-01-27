@@ -152,9 +152,9 @@ class SQLite3_Connection
             return $param->param . " = " . str_repeat(":", $param->idCount) . $param->param;
         }, $params));
 
-        $params = array_merge($params, array_map(function ($where) {
-            return $where->getBoundParams();
-        }, $wheres));
+        array_map(function ($where) {
+            $params[] = $where->getBoundParams();
+        }, $wheres);
 
         if (count($wheres) > 0) {
             $sql .= " WHERE " . implode(" AND ", array_map(function ($where) {
