@@ -189,7 +189,6 @@ class SQLite3_Connection
             $this->checkError([false, "Failed to prepare statement."]);
         }
 
-
         foreach ($params as &$param) {
             $idCountString = str_repeat(":", $param->idCount);
             $stmt->bindValue($idCountString . $param->param, $param->value, $param->type);
