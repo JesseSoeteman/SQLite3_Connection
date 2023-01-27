@@ -77,7 +77,7 @@ class SQLite3_Connection
                     $this->checkError([false, "WhereClause expected."]);
                 }
                 $params[] = $where->getBoundParams();
-                return $where->getStatement();
+                return $where->getClause();
             }, $wheres));
         }
         
