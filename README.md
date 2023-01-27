@@ -7,7 +7,7 @@ SQLite3_Connection lets you connect to a sqlite3 file very easialy.
 
 Install the latest version with
 
-```bash
+```console
 $ composer require jessesoeteman/sqlite3_connection
 ```
 

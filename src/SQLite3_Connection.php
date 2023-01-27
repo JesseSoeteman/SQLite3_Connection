@@ -1,6 +1,7 @@
 <?php
 
 namespace SQLite3_Connection;
+
 use SQLite3;
 use Exception;
 
@@ -50,29 +51,33 @@ class SQLite3_Connection
         }
     }
 
-    /**
-     * Select
-     * 
-     * Executes a select query on the database.
-     * 
-     * @param string $query The query to execute.
-     * @param array $params The parameters to bind to the query. (ParamBindObject)
-     */
-    public function select($query = "", $params = [])
+    // /**
+    //  * Select
+    //  * 
+    //  * Executes a select query on the database.
+    //  * 
+    //  * @param string $query The query to execute.
+    //  * @param array $params The parameters to bind to the query. (ParamBindObject)
+    //  */
+    // public function select($query = "", $params = [])
+    // {
+    //     $result = $this->executeStatement($query, $params);
+
+    //     if ($result === false) {
+    //         $this->checkError([false, "Error while executing statement."]);
+    //     }
+
+    //     $returnArray = [];
+
+    //     while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+    //         array_push($returnArray, $row);
+    //     }
+
+    //     return $this->checkError([true, $returnArray]);
+    // }
+
+    public function select(string $table, array $olumns, array $where)
     {
-        $result = $this->executeStatement($query, $params);
-
-        if ($result === false) {
-            $this->checkError([false, "Error while executing statement."]);
-        }
-
-        $returnArray = [];
-
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-            array_push($returnArray, $row);
-        }
-
-        return $this->checkError([true, $returnArray]);
     }
 
     /**
@@ -167,8 +172,10 @@ class SQLite3_Connection
             $this->checkError([false, "Failed to prepare statement."]);
         }
 
+
         foreach ($params as &$param) {
-            $stmt->bindValue($param->param, $param->value, $param->type);
+            $idCountString = str_repeat(":", $param->idCount);
+            $stmt->bindValue($idCountString . $param->param, $param->value, $param->type);
             if (!$stmt) {
                 $this->checkError([false, "Failed to bind value."]);
             }
@@ -194,16 +201,18 @@ class SQLite3_Connection
      * @param array $params The parameters to bind to the query. (ParamBindObject)
      * @param bool $withColon If the string should contain a colon.
      * @param bool $updateString If the string should be used for an update statement.
+     * 
+     * @return string The string for the statement.
      */
-    private function getStatementString($params = [], $withColon = false, $updateString = false)
+    private function getStatementString(array $params = [], bool $withColon = false, bool $updateString = false): string
     {
         if (!$updateString) {
             $string = "(";
             for ($i = 0; $i < count($params); $i++) {
                 if ($withColon) {
-                    $string .= substr($params[$i]->param, $params[$i]->idCount);
-                } else {
                     $string .= $params[$i]->param;
+                } else {
+                    $string .= str_repeat(":", $params[$i]->idCount) . $params[$i]->param;
                 }
                 if ($i < count($params) - 1) {
                     $string .= ", ";
@@ -211,17 +220,53 @@ class SQLite3_Connection
             }
             $string .= ")";
             return $string;
-        } else {
-            $string = "";
-            for ($i = 0; $i < count($params); $i++) {
-                $string .= substr($params[$i]->param, $params[$i]->idCount) . " = " . $params[$i]->param;
-                if ($i < count($params) - 1) {
-                    $string .= ", ";
-                }
-            }
-            return $string;
         }
-        return;
+
+        $string = "";
+        for ($i = 0; $i < count($params); $i++) {
+            $string .= $params[$i]->param . " = " . str_repeat(":", $params[$i]->idCount) . $params[$i]->param;
+            if ($i < count($params) - 1) {
+                $string .= ", ";
+            }
+        }
+        return $string;
+    }
+
+    /**
+     * Check Table And Columns
+     * 
+     * Checks if a table and columns exist. Throws an exception if the table or columns do not exist.
+     * 
+     * @param string $table The table to check.
+     * @param array $columns The columns to check.
+     * 
+     * @return void
+     */
+    public function checkTableAndColumns(string $table, array $columns = ["*"]): void
+    {
+        $tableExists = $this->executeStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=:table_name;", [new ParamBindObject("table_name", $table)]);
+
+        if ($tableExists == false || $tableExists->fetchArray() == false) {
+            $this->checkError([false, "Table does not exist. Table: {$table}"]);
+        }
+
+        if ($columns[0] == "*") {
+            return;
+        }
+
+        $tableColumns = $this->executeStatement("PRAGMA table_info({$table});");
+
+        $tableColumnsArray = [];
+
+        while ($row = $tableColumns->fetchArray()) {
+            $tableColumnsArray[] = $row["name"];
+        }
+
+        foreach ($columns as $column) {
+            if (!in_array($column, $tableColumnsArray)) {
+                $this->checkError([false, "Column does not exist. Column: {$column}"]);
+            }
+        }
     }
 
     /**
