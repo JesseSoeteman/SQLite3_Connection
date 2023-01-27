@@ -109,9 +109,13 @@ class SQLite3_Connection
 
         $sql = "INSERT INTO {$table} (" . implode(" ,", array_map(function ($param) {
             return $param->param;
-        }, $params)) . ") VALUES (" . array_map(function ($param) {
+        }, $params)) . ") VALUES (" . implode(" ,", array_map(function ($param) {
             return str_repeat(":", $param->idCount) . $param->param;
-        }, $params) . ")";
+        }, $params)) . ")";
+
+        // q: array to string conversion
+        // a: array_map but return a string instead of an array
+
 
         $result = $this->executeStatement($sql, $params);
 
