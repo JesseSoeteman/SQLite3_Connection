@@ -58,22 +58,27 @@ class SQLite3_Connection
      *  
      * @param string $table The table to select from.
      * @param array $columns The columns to select.
-     * @param WhereClause $where The where clause to use.
+     * @param array $wheres The where clauses to use. (WhereClause)
      * 
      * @return array The rows that were selected.
      * 
      * @throws Exception
      */
-    public function select(string $table, array $columns, WhereClause $where = null): array
+    public function select(string $table, array $columns, array $wheres = []): array
     {
         $this->checkTableAndColumns($table, $columns);
 
         $sql = "SELECT " . implode(" ,", $columns) . " FROM {$table}";
 
         $params = [];
-        if ($where != null) {
-            $sql .= " WHERE " . $where->getClause();
-            $params = $where->getBoundParams();
+        if (count($wheres) > 0) {
+            $sql .= " WHERE " . implode(" AND ", array_map(function ($where) {
+                if (!$where instanceof WhereClause) {
+                    $this->checkError([false, "WhereClause expected."]);
+                }
+                $params[] = $where->getBoundParams();
+                return $where->getStatement();
+            }, $wheres));
         }
         
         $result = $this->executeStatement($sql, $params);
@@ -123,53 +128,78 @@ class SQLite3_Connection
     }
 
     /**
-     * Update
-     * 
-     * Executes an update query on the database.
+     * Update Query, updates a row or rows in the database.
      * 
      * @param string $table The table to update.
      * @param array $params The parameters to bind to the query. (ParamBindObject)
+     * @param array $wheres The where conditions. (WhereClause)
      */
-    public function update($table = "", $params = [], $where = [])
+    public function update(string $table, array $params, array $wheres = [])
     {
-        $tableExists = $this->executeStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=:table_name;", [new ParamBindObject(":table_name", $table)]);
+        $this->checkTableAndColumns($table, array_merge(array_map(function ($param) {
+            if (!$param instanceof ParamBindObject) {
+                $this->checkError([false, "ParamBindObject expected."]);
+            }
+            return $param->param;
+        }, $params), array_map(function ($where) {
+            if (!$where instanceof WhereClause) {
+                $this->checkError([false, "WhereClause expected."]);
+            }
+            return $where->column;
+        }, $wheres)));
 
-        if ($tableExists == false || $tableExists->fetchArray() == false) {
-            $this->checkError([false, "Table does not exist."]);
+        $sql = "UPDATE {$table} SET " . implode(" ,", array_map(function ($param) {
+            return $param->param . " = " . str_repeat(":", $param->idCount) . $param->param;
+        }, $params));
+
+        $params = array_merge($params, array_map(function ($where) {
+            return $where->getBoundParams();
+        }, $wheres));
+
+        if (count($wheres) > 0) {
+            $sql .= " WHERE " . implode(" AND ", array_map(function ($where) {
+                return $where->getClause();
+            }, $wheres));
         }
 
-        $sqlStatementData = $this->getStatementString($params, true, true);
-        $sqlConditionData = $this->getStatementString($where, true, true);
-
-        $sql = "UPDATE {$table} SET {$sqlStatementData} WHERE {$sqlConditionData};";
-
-        $params = array_merge($params, $where);
-
         $result = $this->executeStatement($sql, $params);
+
+        if ($result === false) {
+            $this->checkError([false, "Error while executing statement."]);
+        }
+
         return $this->checkError([true, $result]);
     }
 
     /**
-     * Delete
+     * Delete Query, deletes a row from the database.
      * 
      * Executes a delete query on the database.
      * 
      * @param string $table The table to delete from.
-     * @param array $params The parameters to bind to the query. (ParamBindObject)
+     * @param array $wheres The where conditions. (WhereClause)
      */
-    public function delete($table = "", $where = [])
+    public function delete(string $table, array $wheres = [])
     {
-        $tableExists = $this->executeStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=:table_name;", [new ParamBindObject(":table_name", $table)]);
+        $this->checkTableAndColumns($table, array_map(function ($where) {
+            if (!$where instanceof WhereClause) {
+                $this->checkError([false, "WhereClause expected."]);
+            }
+            return $where->column;
+        }, $wheres));
+        
+        $params = [];
+        $sql = "DELETE FROM {$table} WHERE " . implode(" AND ", array_map(function ($where) {
+            $params[] = $where->getBoundParams();
+            return $where->getClause();
+        }, $wheres));
 
-        if ($tableExists == false || $tableExists->fetchArray() == false) {
-            $this->checkError([false, "Table does not exist."]);
+        $result = $this->executeStatement($sql, $params);
+
+        if ($result === false) {
+            $this->checkError([false, "Error while executing statement."]);
         }
 
-        $sqlConditionData = $this->getStatementString($where, true, true);
-
-        $sql = "DELETE FROM {$table} WHERE {$sqlConditionData};";
-
-        $result = $this->executeStatement($sql, $where);
         return $this->checkError([true, $result]);
     }
 
