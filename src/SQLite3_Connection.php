@@ -148,6 +148,14 @@ class SQLite3_Connection
             return $where->column;
         }, $wheres)));
 
+        $select = $this->select($table, array_map(function ($param) {
+            return $param->param;
+        }, $params), $wheres);
+
+        if (count($select) === 0) {
+            $this->checkError([false, "No rows found."]);
+        }
+
         $sql = "UPDATE {$table} SET " . implode(" ,", array_map(function ($param) {
             return $param->param . " = " . str_repeat(":", $param->idCount) . $param->param;
         }, $params));
