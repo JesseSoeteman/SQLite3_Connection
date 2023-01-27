@@ -98,7 +98,7 @@ class SQLite3_Connection
      * @param array $params The parameters to bind to the query. (ParamBindObject)
      * 
      */
-    public function insert($table, array $params)
+    public function insert(string $table, array $params)
     {
         $this->checkTableAndColumns($table, array_map(function ($param) {
             if (!$param instanceof ParamBindObject) {
