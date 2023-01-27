@@ -113,6 +113,7 @@ class SQLite3_Connection
             return str_repeat(":", $param->idCount) . $param->param;
         }, $params)) . ")";
 
+        echo $sql;
 
         $result = $this->executeStatement($sql, $params);
 
