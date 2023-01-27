@@ -6,6 +6,8 @@ use SQLite3;
 use Exception;
 
 use SQLite3_Connection\Classes\ParamBindObject;
+use SQLite3_Connection\Classes\WhereClause;
+use SQLite3_Connection\Statics\OPERATOR;
 
 /**
  * SQLite3_Connection
@@ -51,33 +53,42 @@ class SQLite3_Connection
         }
     }
 
-    // /**
-    //  * Select
-    //  * 
-    //  * Executes a select query on the database.
-    //  * 
-    //  * @param string $query The query to execute.
-    //  * @param array $params The parameters to bind to the query. (ParamBindObject)
-    //  */
-    // public function select($query = "", $params = [])
-    // {
-    //     $result = $this->executeStatement($query, $params);
-
-    //     if ($result === false) {
-    //         $this->checkError([false, "Error while executing statement."]);
-    //     }
-
-    //     $returnArray = [];
-
-    //     while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-    //         array_push($returnArray, $row);
-    //     }
-
-    //     return $this->checkError([true, $returnArray]);
-    // }
-
-    public function select(string $table, array $olumns, array $where)
+    /**
+     * Select Query, returns an array of rows.
+     *  
+     * @param string $table The table to select from.
+     * @param array $columns The columns to select.
+     * @param WhereClause $where The where clause to use.
+     * 
+     * @return array The rows that were selected.
+     * 
+     * @throws Exception
+     */
+    public function select(string $table, array $columns, WhereClause $where = null)
     {
+        $this->checkTableAndColumns($table, $columns);
+
+        $sql = "SELECT " . $this->getStatementString($columns) . " FROM {$table}";
+
+        $params = [];
+        if ($where != null) {
+            $sql .= " WHERE " . $where->getClause();
+            $params = $where->getBoundParams();
+        }
+
+        $result = $this->executeStatement($sql, $params);
+
+        if ($result === false) {
+            $this->checkError([false, "Error while executing statement."]);
+        }
+
+        $returnArray = [];
+
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            $returnArray[] = $row;
+        }
+
+        return $this->checkError([true, $returnArray]);
     }
 
     /**
