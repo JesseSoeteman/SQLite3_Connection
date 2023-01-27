@@ -78,6 +78,8 @@ class SQLite3_Connection
 
         $result = $this->executeStatement($sql, $params);
 
+        return $this->checkError([false, $result]);
+
         if ($result === false) {
             $this->checkError([false, "Error while executing statement."]);
         }
@@ -112,8 +114,6 @@ class SQLite3_Connection
         }, $params)) . ") VALUES (" . implode(" ,", array_map(function ($param) {
             return str_repeat(":", $param->idCount) . $param->param;
         }, $params)) . ")";
-
-        echo $sql;
 
         $result = $this->executeStatement($sql, $params);
 
