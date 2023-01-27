@@ -40,7 +40,7 @@ class WhereClause
                     throw new \Exception("The value for the '" . $this->operator . "' operator must be an array.");
                 }
                 $this->value = " (" . implode(", ", array_map(function ($value, $index) {
-                    $this->boundParams[] = new ParamBindObject("::" . str_repeat(":", $index) . $this->column, $value);
+                    $this->boundParams[] = new ParamBindObject("::" . str_repeat(":", $index) . $this->column, $value, $index + 2);
                     return "`" . "::" . str_repeat(":", $index) . $this->column . "`";
                 }, $this->value)) . ")";
                 break;
