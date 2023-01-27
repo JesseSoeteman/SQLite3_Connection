@@ -75,10 +75,13 @@ class SQLite3_Connection
             $sql .= " WHERE " . $where->getClause();
             $params = $where->getBoundParams();
         }
-
+        
+        return $this->checkError([false, [
+            "sql" => $sql,
+            "params" => $params
+        ]]);
         $result = $this->executeStatement($sql, $params);
 
-        return $this->checkError([false, $result]);
 
         if ($result === false) {
             $this->checkError([false, "Error while executing statement."]);
