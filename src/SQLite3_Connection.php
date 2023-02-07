@@ -8,6 +8,7 @@ use Exception;
 use SQLite3_Connection\Classes\ParamBindObject;
 use SQLite3_Connection\Classes\WhereClause;
 use SQLite3_Connection\Statics\OPERATOR;
+use SQLite3_Connection\Statics\LOGIC_OP;
 
 /**
  * SQLite3_Connection
@@ -71,14 +72,11 @@ class SQLite3_Connection
         $sql = "SELECT " . implode(" ,", $columns) . " FROM {$table}";
 
         $params = [];
+
         if (count($wheres) > 0) {
-            $sql .= " WHERE " . implode(" AND ", array_map(function ($where) {
-                if (!$where instanceof WhereClause) {
-                    $this->checkError([false, "WhereClause expected."]);
-                }
-                $params[] = $where->getBoundParams();
-                return $where->getClause();
-            }, $wheres));
+            $getWhere = $this->getWhereClauseString($wheres);
+            $sql .= $getWhere[0];
+            $params .= $getWhere[1];
         }
         
         $result = $this->executeStatement($sql, $params);
@@ -158,14 +156,10 @@ class SQLite3_Connection
             return $param->param . " = " . str_repeat(":", $param->idCount) . $param->param;
         }, $params));
 
-        array_map(function ($where) {
-            $params[] = $where->getBoundParams();
-        }, $wheres);
-
         if (count($wheres) > 0) {
-            $sql .= " WHERE " . implode(" AND ", array_map(function ($where) {
-                return $where->getClause();
-            }, $wheres));
+            $getWhere = $this->getWhereClauseString($wheres);
+            $sql .= $getWhere[0];
+            $params .= $getWhere[1];
         }
 
         $result = $this->executeStatement($sql, $params);
@@ -201,10 +195,13 @@ class SQLite3_Connection
         }
         
         $params = [];
-        $sql = "DELETE FROM {$table} WHERE " . implode(" AND ", array_map(function ($where) {
-            $params[] = $where->getBoundParams();
-            return $where->getClause();
-        }, $wheres));
+        $sql = "DELETE FROM {$table}";
+
+        if (count($wheres) > 0) {
+            $getWhere = $this->getWhereClauseString($wheres);
+            $params .= $getWhere[1];
+            $sql .= $getWhere[0];
+        }
 
         $result = $this->executeStatement($sql, $params);
 
@@ -288,6 +285,37 @@ class SQLite3_Connection
                 $this->checkError([false, "Column does not exist. Column: {$column}"]);
             }
         }
+    }
+
+    /**
+     * Get Where Clause String
+     * 
+     * Gets the where clause string and parameters.
+     * 
+     * @param array $wheres The where conditions. (WhereClause)
+     * 
+     * @return array The where clause string and parameters. [string, params]
+     * 
+     * @throws Exception
+     */
+    private function getWhereClauseString(array $wheres)
+    {
+        $params = [];
+        $sql = " WHERE " . implode(" ", array_map(function ($where, $index) {
+            if ($index % 2 === 0) {
+                if (!$where instanceof WhereClause) {
+                    $this->checkError([false, "WhereClause expected."]);
+                }
+                $params[] = $where->getBoundParams();
+                return $where->getClause();
+            } else {
+                if (!in_array($where, [LOGIC_OP::AND, LOGIC_OP::OR])) {
+                    $this->checkError([false, "Invalid operator."]);
+                }
+                return $where;
+            }
+        }, $wheres, array_keys($wheres)));
+        return [$sql, $params];
     }
 
     /**
