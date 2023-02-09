@@ -213,6 +213,18 @@ class SQLite3_Connection
     }
 
     /**
+     * Get Last Insert Row ID
+     * 
+     * Returns the last inserted row ID.
+     * 
+     * @return int The last inserted row ID.
+     */
+    public function lastInsertRowID(): int
+    {
+        return $this->db->lastInsertRowID();
+    }
+    
+    /**
      * Execute Statement
      * 
      * Executes a statement on the database. With this function you can execute any query.
