@@ -313,12 +313,12 @@ class SQLite3_Connection
     private function getWhereClauseString(array $wheres)
     {
         $params = [];
-        $sql = " WHERE " . implode(" ", array_map(function ($where, $index) {
+        $sql = " WHERE " . implode(" ", array_map(function ($where, $index) use (&$params) {
             if ($index % 2 === 0) {
                 if (!$where instanceof WhereClause) {
                     $this->checkError([false, "WhereClause expected."]);
                 }
-                $params[] = $where->getBoundParams();
+                $params = $where->getBoundParams();
                 return $where->getClause();
             } else {
                 if (!in_array($where, [LOGIC_OP::AND, LOGIC_OP::OR])) {
