@@ -76,7 +76,7 @@ class SQLite3_Connection
         if (count($wheres) > 0) {
             $getWhere = $this->getWhereClauseString($wheres);
             $sql .= $getWhere[0];
-            array_merge($params, $getWhere[1]);
+            $params = array_merge($params, $getWhere[1]);
         }
         
         $result = $this->executeStatement($sql, $params);
@@ -159,7 +159,7 @@ class SQLite3_Connection
         if (count($wheres) > 0) {
             $getWhere = $this->getWhereClauseString($wheres);
             $sql .= $getWhere[0];
-            array_merge($params, $getWhere[1]);
+            $params = array_merge($params, $getWhere[1]);
         }
 
         $result = $this->executeStatement($sql, $params);
@@ -200,7 +200,7 @@ class SQLite3_Connection
         if (count($wheres) > 0) {
             $getWhere = $this->getWhereClauseString($wheres);
             $sql .= $getWhere[0];
-            array_merge($params, $getWhere[1]);
+            $params = array_merge($params, $getWhere[1]);
         }
 
         $result = $this->executeStatement($sql, $params);
